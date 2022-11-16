@@ -1,5 +1,7 @@
 package lucas.rest;
 
+import static io.restassured.RestAssured.*;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,5 +24,26 @@ public class OlaMundoTest {
 		
 //		ValidatableResponse validacao = response.then();
 //		validacao.statusCode(201); 							//Gera uma falha
+	}
+	
+	@Test
+	public void devoConhecerOutrasFormasRestAssured() {
+		Response response = request(Method.GET, "http://restapi.wcaquino.me/ola");
+		ValidatableResponse validacao = response.then();
+		validacao.statusCode(200);
+		
+		get("http://restapi.wcaquino.me/ola").then().statusCode(200);
+		
+		//Modo Fluente ----------
+		//Given When Then
+		given()
+			//Pré-condições
+		.when()
+			//Ação que vamos testar
+			.get("http://restapi.wcaquino.me/ola")
+		.then()
+			//Teste
+			//.assertThat() //Não faz nada, é só para legibilidade
+			.statusCode(200);
 	}
 }
