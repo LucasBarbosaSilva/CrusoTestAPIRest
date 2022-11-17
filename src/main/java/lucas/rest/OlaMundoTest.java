@@ -85,7 +85,7 @@ public class OlaMundoTest {
 		.when()
 			.get("http://restapi.wcaquino.me/ola")
 		.then()
-			.statusCode(200)
+			.statusCode(200) //Começar primeiro pelas que podem causar problemas mais rápido.
 			.body(is("Ola Mundo!"))
 			.body(containsString("Mundo"))
 			.body(is(notNullValue()));
