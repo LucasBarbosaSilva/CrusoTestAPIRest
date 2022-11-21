@@ -138,6 +138,7 @@ public class UserJsonTest {
 				.statusCode(200)
 				.extract().path("name.findAll{it.startsWith('Maria')}")
 			;
+
 		
 		Assert.assertEquals(1, names.size());
 		Assert.assertTrue(names.get(0).equalsIgnoreCase("mAriA Joaquina"));
