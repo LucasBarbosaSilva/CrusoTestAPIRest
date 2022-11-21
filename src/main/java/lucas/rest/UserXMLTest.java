@@ -32,4 +32,23 @@ public class UserXMLTest {
 			.body("name", hasItems("Zezinho", "Luizinho"))
 		;
 	}
+	
+	@Test
+	public void devoFazerPesquisasAvancadasComXML() {
+		given()
+		.when()
+			.get("http://restapi.wcaquino.me/usersXML")
+		.then()
+			.statusCode(200)
+			.rootPath("users.user")
+			.body("size()", is(3))
+			.body("findAll{it.age.toInteger() <= 25}.size()", is(2))
+			.body("@id", hasItems("1", "2", "3"))
+			.body("find{it.age == 25}.name", is("Maria Joaquina"))
+			.body("findAll{it.name.toString().contains('n')}.name", hasItems("Maria Joaquina", "Ana Julia"))
+			.body("salary.find{it != null}.toDouble()", is(1234.5678d))
+			.body("age.collect{it.toInteger() * 2}", hasItems(60,50, 40))
+			.body("name.findAll{it.toString().startsWith('Maria')}.collect{it.toString().toUpperCase()}", is("Maria jOaquina".toUpperCase()))
+		;
+	}
 }
