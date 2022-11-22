@@ -70,4 +70,24 @@ public class UserXMLTest {
 		Assert.assertEquals("Maria joaquina".toUpperCase(), names.get(0).toString().toUpperCase());
 		Assert.assertEquals("Ana Julia".toUpperCase(), names.get(1).toString().toUpperCase());
 	}
+	
+	@Test
+	public void devoFazerPesquisasAvancadasComXpath() {
+		given()
+		.when()
+			.get("http://restapi.wcaquino.me/usersXML")
+		.then()
+			.statusCode(200)
+			.body(hasXPath("count(/users/user)", is("3")))
+			.body(hasXPath("/users/user[@id='1']"))
+			.body(hasXPath("//filhos//name[.='Zezinho']/../../name", is("Ana Julia")))
+			.body(hasXPath("//name[.='Ana Julia']/following-sibling::filhos", allOf(containsString("Zezinho"), containsString("Luizinho"))))
+			.body(hasXPath("//name", is("João da Silva")))
+			.body(hasXPath("//user[last()]/name", is("Ana Julia")))
+			.body(hasXPath("count(/users/user/name[contains(., 'n')])", is("2")))
+			.body(hasXPath("//user[age < 24]/name", is("Ana Julia")))
+			.body(hasXPath("//user[age > 20 and age < 30]/name", is("Maria Joaquina")))
+			.body(hasXPath("//user[age > 20][age < 30]/name", is("Maria Joaquina")))
+		;
+	}
 }
