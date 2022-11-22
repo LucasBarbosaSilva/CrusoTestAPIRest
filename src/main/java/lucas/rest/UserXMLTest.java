@@ -10,24 +10,41 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.internal.path.xml.NodeImpl;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 
 public class UserXMLTest {
+	public static RequestSpecification reqSpec;
+	public static ResponseSpecification resSpec;
 	@BeforeClass
 	public static void setup() {
 		RestAssured.baseURI="http://restapi.wcaquino.me";
 //		RestAssured.port = 443;
 //		RestAssured.basePath = "/v2";
+		
+		RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
+		reqBuilder.log(LogDetail.ALL);
+		reqSpec = reqBuilder.build();
+		
+		ResponseSpecBuilder resBuilder = new ResponseSpecBuilder();
+		resBuilder.expectStatusCode(200);
+		resSpec = resBuilder.build();
+		
+		RestAssured.requestSpecification = reqSpec;
+		RestAssured.responseSpecification = resSpec;
 	}
 	@Test
 	public void devotrabalharComXML() {
+		
+		
 		given()
-			.log().all()
 		.when()
 			.get("/usersXML/3")
 		.then()
-			.statusCode(200)
-			
 			.rootPath("user")
 			.body("name", is("Ana Julia"))
 			.body("@id", is("3"))
@@ -51,7 +68,6 @@ public class UserXMLTest {
 		.when()
 			.get("/usersXML")
 		.then()
-			.statusCode(200)
 			.rootPath("users.user")
 			.body("size()", is(3))
 			.body("findAll{it.age.toInteger() <= 25}.size()", is(2))
@@ -70,7 +86,6 @@ public class UserXMLTest {
 		.when()
 			.get("/usersXML")
 		.then()
-			.statusCode(200)
 			.extract().path("users.user.name.findAll{it.toString().contains('n')}")
 		;
 //		System.out.println(path);
@@ -85,7 +100,6 @@ public class UserXMLTest {
 		.when()
 			.get("/usersXML")
 		.then()
-			.statusCode(200)
 			.body(hasXPath("count(/users/user)", is("3")))
 			.body(hasXPath("/users/user[@id='1']"))
 			.body(hasXPath("//filhos//name[.='Zezinho']/../../name", is("Ana Julia")))
