@@ -37,4 +37,18 @@ public class EnviaDadosTest {
 			.contentType(containsString("utf-8"))
 		;
 	}
+	
+	@Test
+	public void deveEnviarValorViaHeader() {
+		given()
+			.log().all()
+			.accept(ContentType.XML) //ContentType é para a requisicao; accept é para a resposta!!!
+		.when()
+			.get("http://restapi.wcaquino.me/v2/users")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.contentType(ContentType.XML)
+		;
+	}
 }
