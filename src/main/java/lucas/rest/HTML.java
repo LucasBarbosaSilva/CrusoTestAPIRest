@@ -25,4 +25,21 @@ public class HTML {
 			.body("tr.find{it.toString().startsWith('2')}.td[1]", is("Maria Joaquina"))
 		;
 	}
+	
+	@Test
+	public void deveFazerBuscasComXpathEmHTML() {
+		given()
+			.log().all()
+		.when()
+			.get("http://restapi.wcaquino.me/v2/users?format=clean")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.contentType(ContentType.HTML)
+			.body(hasXPath("count(//table//tr)", is("4")))
+			.body(hasXPath("//td[.='2']/../td[2]", is("Maria Joaquina")))
+			
+			
+		;
+	}
 }
