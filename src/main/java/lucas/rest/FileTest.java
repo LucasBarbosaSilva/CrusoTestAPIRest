@@ -35,4 +35,19 @@ public class FileTest {
 			.body("name", is("pdf.pdf"))
 		;
 	}
+	
+
+	@Test
+	public void naoDeveFazerEnvioArquivoGrande() {
+		given()
+			.log().all()
+			.multiPart("arquivo", new File("src/main/java/resources/14 - 2.bmp"))
+		.when()
+			.post("http://restapi.wcaquino.me/upload")
+		.then()
+			.log().all()
+			.time(lessThan(1200L))
+			.statusCode(413)
+		;
+	}
 }
