@@ -42,7 +42,7 @@ public class SchemaTest {
 		given()
 			.log().all()
 		.when()
-			.get("https://restapi.wcaquino.me/users")
+			.get("http://restapi.wcaquino.me/users")
 		.then()
 			.log().all()
 			.statusCode(200)
@@ -50,12 +50,6 @@ public class SchemaTest {
 		;
 	}
 }
-//
-//io.restassured.module.jsv.JsonSchemaValidationException: com.fasterxml.jackson.core.JsonParseException: Unexpected character ('u' (code 117)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')
-//at [Source: java.io.StringReader@2620e717; line: 1, column: 2]
-//
-//Caused by: com.fasterxml.jackson.core.JsonParseException: Unexpected character ('u' (code 117)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')
-//at [Source: java.io.StringReader@2620e717; line: 1, column: 2]
 
 
 
