@@ -1,9 +1,14 @@
 package lucas.rest;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
+
+import io.restassured.http.ContentType;
 
 
 
@@ -91,5 +96,38 @@ public class AuthTest {
 			.body("status", is("logado"))
 		;
 	}
+	
+	@Test
+	public void deveFazerAutenticacaoComTokenJWT() { 
+		Map<String, String> login = new HashMap<String, String>();
+		login.put("email", "maricris1497@uorak.com");
+		login.put("senha", "1234");
+		//Login na API
+		//Receber o token
+		String token = given()
+			.log().all()
+			.body(login)
+			.contentType(ContentType.JSON)
+		.when()
+			.post("https://barrigarest.wcaquino.me/signin")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.extract().path("token")
+		;
+		
+		//Receber as contas
+		given()
+			.log().all()
+			.header("Authorization", "JWT "+token)
+		.when()
+			.get("https://barrigarest.wcaquino.me/contas")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.body("nome", hasItem("Teste"))
+		;
+	}
 }
 //a002f898793c158b2b62e6ed543688ef
+//maricris1497@uorak.com
