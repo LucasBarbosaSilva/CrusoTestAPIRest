@@ -9,6 +9,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import io.restassured.http.ContentType;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath.CompatibilityMode;
 
 
 
@@ -127,6 +129,43 @@ public class AuthTest {
 			.statusCode(200)
 			.body("nome", hasItem("Teste"))
 		;
+	}
+	
+	@Test
+	public void deveAcessarAplicacaoWeb() { 
+
+		String cookie = given()
+			.log().all()
+			.formParam("email", "maricris1497@uorak.com")
+			.formParam("senha", "1234")
+			.contentType(ContentType.URLENC.withCharset("utf-8"))
+		.when()
+			.post("https://seubarriga.wcaquino.me/logar")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.extract().header("set-cookie")
+		;
+		
+		cookie = cookie.split("=")[1];
+		cookie = cookie.split(";")[0];
+		
+		//Obter a conta
+		
+		String body = given()
+			.log().all()
+			.cookie("connect.sid", cookie)
+		.when()
+			.get("https://seubarriga.wcaquino.me/contas")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.body("html.body.table.tbody.tr[0].td[0]", is("Teste"))
+			.extract().body().asString()
+		;
+		
+		XmlPath xmlPath = new XmlPath(CompatibilityMode.HTML, body);
+		System.out.println(xmlPath.getString("html.body.table.tbody.tr[0].td[0]"));
 	}
 }
 //a002f898793c158b2b62e6ed543688ef
