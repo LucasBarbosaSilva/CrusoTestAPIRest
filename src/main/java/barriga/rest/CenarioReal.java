@@ -84,7 +84,7 @@ public class CenarioReal extends BaseTest{
 			.header("Authorization", "JWT "+TOKEN)
 			.body(contaAlterada)
 		.when()
-			.put("/contas/"+idRecebido)
+			.put("/contas/"+idRecebido) 
 		.then()
 			.statusCode(200)
 			.body("id", is(idRecebido))
@@ -94,8 +94,28 @@ public class CenarioReal extends BaseTest{
 	
 	@Test
 	public void naodeveInlcuirContaComNomeRepetido() {
-		//post/sigin
-		//post/contas
+		Map<String, String> conta = new HashMap<String, String>();
+		String id = ""+System.currentTimeMillis(); 
+		conta.put("nome", "Teste2"+id);
+		
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+			.body(conta)
+		.when()
+			.post("/contas")
+		.then()
+			.statusCode(201)
+		;
+		
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+			.body(conta)
+		.when()
+			.post("/contas")
+		.then()
+			.statusCode(400)
+			.body("error", is("Já existe uma conta com esse nome!") )
+		;
 	}
 	
 	@Test
