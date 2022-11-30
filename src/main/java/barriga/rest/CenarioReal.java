@@ -1,11 +1,20 @@
 package barriga.rest;
 
+import static io.restassured.RestAssured.given;
+
 import org.junit.Test;
 
-public class CenarioReal {
+import core.BaseTest;
+
+public class CenarioReal extends BaseTest{
 	@Test
 	public void naoDeveAcessarAPISemToken() {
-		//get/contas
+		given()
+		.when()
+			.get("/contas")
+		.then()
+			.statusCode(401)
+		;
 	}
 	
 	@Test
