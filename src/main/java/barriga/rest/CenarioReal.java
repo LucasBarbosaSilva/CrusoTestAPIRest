@@ -129,7 +129,7 @@ public class CenarioReal extends BaseTest{
 		.when()
 			.post("/transacoes")
 		.then()
-			.statusCode(201)
+			.statusCode(200)
 		;
 	}
 	
@@ -157,7 +157,7 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void deveCadastrarTransacaoFutura() {
+	public void naoDeveCadastrarTransacaoFutura() {
 		Movimentacao movimentacao = getMovimentacaoValida();
 		movimentacao.setData_transacao("10/01/2023");
 		given()
@@ -199,8 +199,13 @@ public class CenarioReal extends BaseTest{
 	
 	@Test
 	public void deveRemoverMovimentacao() {
-		//post/sigin
-		//get/saldo
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+		.when()
+			.delete("/transacoes/1389245") 
+		.then()
+			.statusCode(200)
+		;
 	}
 	
 	private Movimentacao getMovimentacaoValida() {
