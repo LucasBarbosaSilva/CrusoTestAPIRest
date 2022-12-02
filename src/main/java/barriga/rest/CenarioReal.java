@@ -7,20 +7,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
+import com.sun.tools.xjc.reader.Util;
 
 import core.BaseTest;
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-
+import io.restassured.specification.FilterableRequestSpecification;
+import utils.Utils;
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CenarioReal extends BaseTest{
-	private String TOKEN;
-	@Before
-	public void login() {
+	public static String conta_nome;
+	public static Integer id_conta;
+	public static Integer id_transacao;
+	@BeforeClass
+	public static void login() {
 		Map<String, String> login = new HashMap<String, String>();
 		login.put("email", "maricris1497@uorak.com");
 		login.put("senha", "1234");
 		
-		TOKEN = given()
+		String TOKEN = given()
 			.body(login)
 		.when()
 			.post("/signin")
@@ -28,26 +38,20 @@ public class CenarioReal extends BaseTest{
 			.statusCode(200)
 			.extract().path("token")
 		;
-	}
-	@Test
-	public void naoDeveAcessarAPISemToken() {
-		given()
-		.when()
-			.get("/contas")
-		.then()
-			.statusCode(401)
-		;
+		
+		RestAssured.requestSpecification.header("Authorization", "JWT "+TOKEN);
 	}
 	
+	
 	@Test
-	public void deveIncluirContaComSucesso() {
+	public void t02_deveIncluirContaComSucesso() {
 		
 		
 		Map<String, String> conta = new HashMap<String, String>();
-		String id = ""+System.currentTimeMillis(); 
-		conta.put("nome", "Teste2"+id);
-		given()
-			.header("Authorization", "JWT "+TOKEN)
+		String id = ""+System.currentTimeMillis();
+		conta_nome = "Teste1"+id;
+		conta.put("nome", conta_nome);
+		id_conta = given()
 			.body(conta)
 		.when()
 			.post("/contas")
@@ -55,18 +59,17 @@ public class CenarioReal extends BaseTest{
 			.statusCode(201)
 			.body("id", notNullValue())
 			.body("nome", is(conta.get("nome")))
-			.log().all()
+			.extract().path("id")
 		;
 	}
 	
 	@Test
-	public void deveAlterarContaComSucesso() {
+	public void t03_deveAlterarContaComSucesso() {
 		Map<String, String> conta = new HashMap<String, String>();
 		String id = ""+System.currentTimeMillis(); 
 		conta.put("nome", "Teste2"+id);
 		
 		int idRecebido = given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body(conta)
 		.when()
 			.post("/contas")
@@ -78,11 +81,9 @@ public class CenarioReal extends BaseTest{
 		;
 		
 		Map<String, String> contaAlterada = new HashMap<String, String>();
-		id = ""+System.currentTimeMillis(); 
-		contaAlterada.put("nome", "Teste2"+id);
+		contaAlterada.put("nome", conta_nome+" alterada");
 		
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body(contaAlterada)
 		.when()
 			.put("/contas/"+idRecebido) 
@@ -94,13 +95,12 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void naodeveInlcuirContaComNomeRepetido() {
+	public void t04_naodeveInlcuirContaComNomeRepetido() {
 		Map<String, String> conta = new HashMap<String, String>();
 		String id = ""+System.currentTimeMillis(); 
 		conta.put("nome", "Teste2"+id);
 		
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body(conta)
 		.when()
 			.post("/contas")
@@ -109,7 +109,6 @@ public class CenarioReal extends BaseTest{
 		;
 		
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body(conta)
 		.when()
 			.post("/contas")
@@ -120,23 +119,22 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void deveInlcuirMoviemntacaoComSucesso() {
+	public void t05_deveInlcuirMoviemntacaoComSucesso() {
 		Movimentacao movimentacao = getMovimentacaoValida();
 		
-		given()
-			.header("Authorization", "JWT "+TOKEN)
+		id_transacao = given()
 			.body(movimentacao)
 		.when()
 			.post("/transacoes")
 		.then()
-			.statusCode(200)
+			.statusCode(201)
+			.extract().path("id")
 		;
 	}
 	
 	@Test
-	public void deveValidarCamposObrigatoriosMoviemntacao() {				
+	public void t06_deveValidarCamposObrigatoriosMoviemntacao() {				
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body("{}")
 		.when()
 			.post("/transacoes")
@@ -157,11 +155,11 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void naoDeveCadastrarTransacaoFutura() {
+	public void t07_naoDeveCadastrarTransacaoFutura() {
 		Movimentacao movimentacao = getMovimentacaoValida();
-		movimentacao.setData_transacao("10/01/2023");
+		String dataFutura = Utils.getDataFuturaFormatada(2);
+		movimentacao.setData_transacao(dataFutura);
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 			.body(movimentacao)
 		.when()
 			.post("/transacoes")
@@ -173,11 +171,11 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void naoDeveRemoverContaComMovimentacao() {
+	public void t08_naoDeveRemoverContaComMovimentacao() {
 		given()
-			.header("Authorization", "JWT "+TOKEN)
+			.pathParam("id", id_conta)
 		.when()
-			.delete("/contas/1485261")
+			.delete("/contas/{id}")
 		.then()
 			.statusCode(500)
 			.body("constraint", is("transacoes_conta_id_foreign"))
@@ -186,33 +184,44 @@ public class CenarioReal extends BaseTest{
 	}
 	
 	@Test
-	public void deveCalcularSaldoContas() {
+	public void t09_deveCalcularSaldoContas() {
 		given()
-			.header("Authorization", "JWT "+TOKEN)
 		.when()
 			.get("/saldo")
 		.then()
 			.statusCode(200)
-			.body("find{it.conta_id == 1485261}.saldo", is("24.00"))
+			.body("find{it.conta_id == "+id_conta+"}.saldo", is("12.00"))
 		;
 	}
 	
 	@Test
-	public void deveRemoverMovimentacao() {
+	public void t10_deveRemoverMovimentacao() {
 		given()
-			.header("Authorization", "JWT "+TOKEN)
+			.pathParam("id", id_transacao)
 		.when()
-			.delete("/transacoes/1389245") 
+			.delete("/transacoes/{id}") 
 		.then()
-			.statusCode(200)
+			.statusCode(204)
+		;
+	}
+	
+	@Test
+	public void t11_naoDeveAcessarAPISemToken() {
+		FilterableRequestSpecification req = (FilterableRequestSpecification) RestAssured.requestSpecification;
+		req.removeHeader("Authorization");
+		given()
+		.when()
+			.get("/contas")
+		.then()
+			.statusCode(401)
 		;
 	}
 	
 	private Movimentacao getMovimentacaoValida() {
 		Movimentacao movimentacao = new Movimentacao();
-		movimentacao.setConta_id(1485261);
-		movimentacao.setData_pagamento("01/11/2022");
-		movimentacao.setData_transacao("01/01/2022");
+		movimentacao.setConta_id(id_conta);
+		movimentacao.setData_pagamento(Utils.getDataFuturaFormatada(5));
+		movimentacao.setData_transacao(Utils.getDataFuturaFormatada(-1));
 		movimentacao.setDescricao("Teste");
 		movimentacao.setEnvolvido("eu");
 		movimentacao.setValor(12.00f);
