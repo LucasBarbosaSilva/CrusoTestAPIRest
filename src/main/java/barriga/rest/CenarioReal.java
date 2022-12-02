@@ -55,6 +55,7 @@ public class CenarioReal extends BaseTest{
 			.statusCode(201)
 			.body("id", notNullValue())
 			.body("nome", is(conta.get("nome")))
+			.log().all()
 		;
 	}
 	
@@ -120,8 +121,24 @@ public class CenarioReal extends BaseTest{
 	
 	@Test
 	public void deveInlcuirMoviemntacaoComSucesso() {
-		//post/sigin
-		//post/transacoes 
+		Movimentacao movimentacao = new Movimentacao();
+		movimentacao.setConta_id(1485261);
+		movimentacao.setData_pagamento("01/11/2022");
+		movimentacao.setData_transacao("01/10/2022");
+		movimentacao.setDescricao("Teste");
+		movimentacao.setEnvolvido("eu");
+		movimentacao.setValor(12.00f);
+		movimentacao.setTipo("REC");
+		movimentacao.setStatus(true);
+		
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+			.body(movimentacao)
+		.when()
+			.post("/transacoes")
+		.then()
+			.statusCode(201)
+		;
 	}
 	
 	@Test
