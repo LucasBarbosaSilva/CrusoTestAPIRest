@@ -121,15 +121,7 @@ public class CenarioReal extends BaseTest{
 	
 	@Test
 	public void deveInlcuirMoviemntacaoComSucesso() {
-		Movimentacao movimentacao = new Movimentacao();
-		movimentacao.setConta_id(1485261);
-		movimentacao.setData_pagamento("01/11/2022");
-		movimentacao.setData_transacao("01/10/2022");
-		movimentacao.setDescricao("Teste");
-		movimentacao.setEnvolvido("eu");
-		movimentacao.setValor(12.00f);
-		movimentacao.setTipo("REC");
-		movimentacao.setStatus(true);
+		Movimentacao movimentacao = getMovimentacaoValida();
 		
 		given()
 			.header("Authorization", "JWT "+TOKEN)
@@ -166,20 +158,43 @@ public class CenarioReal extends BaseTest{
 	
 	@Test
 	public void deveCadastrarTransacaoFutura() {
-		//post/sigin
-		//post/transacoes 
+		Movimentacao movimentacao = getMovimentacaoValida();
+		movimentacao.setData_transacao("10/01/2023");
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+			.body(movimentacao)
+		.when()
+			.post("/transacoes")
+		.then()
+			.statusCode(400)
+			.body("$", hasSize(1))
+			.body("msg", hasItem("Data da Movimentação deve ser menor ou igual à data atual"))
+		;
 	}
 	
 	@Test
 	public void naoDeveRemoverContaComMovimentacao() {
-		//post/sigin
-		//delete/contas/:id 
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+		.when()
+			.delete("/contas/1485261")
+		.then()
+			.statusCode(500)
+			.body("constraint", is("transacoes_conta_id_foreign"))
+			
+		;
 	}
 	
 	@Test
 	public void deveCalcularSaldoContas() {
-		//post/sigin
-		//get/saldo
+		given()
+			.header("Authorization", "JWT "+TOKEN)
+		.when()
+			.get("/saldo")
+		.then()
+			.statusCode(200)
+			.body("find{it.conta_id == 1485261}.saldo", is("24.00"))
+		;
 	}
 	
 	@Test
@@ -188,5 +203,16 @@ public class CenarioReal extends BaseTest{
 		//get/saldo
 	}
 	
-	
+	private Movimentacao getMovimentacaoValida() {
+		Movimentacao movimentacao = new Movimentacao();
+		movimentacao.setConta_id(1485261);
+		movimentacao.setData_pagamento("01/11/2022");
+		movimentacao.setData_transacao("01/01/2022");
+		movimentacao.setDescricao("Teste");
+		movimentacao.setEnvolvido("eu");
+		movimentacao.setValor(12.00f);
+		movimentacao.setTipo("REC");
+		movimentacao.setStatus(true);
+		return movimentacao;
+	}
 }
