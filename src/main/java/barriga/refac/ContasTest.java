@@ -7,32 +7,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import core.BaseTest;
-import io.restassured.RestAssured;
+import utils.BarrigaUtils;
 
 public class ContasTest extends BaseTest{
-	@BeforeClass
-	public static void login() {
-		Map<String, String> login = new HashMap<String, String>();
-		login.put("email", "maricris1497@uorak.com");
-		login.put("senha", "1234");
-		
-		String TOKEN = given()
-			.body(login)
-		.when()
-			.post("/signin")
-		.then()
-			.statusCode(200)
-			.extract().path("token")
-		;
-		
-		RestAssured.requestSpecification.header("Authorization", "JWT "+TOKEN);
-		
-		RestAssured.get("/reset").then().statusCode(200);
-	}
 	
 	@Test
 	public void deveIncluirContaComSucesso() {
@@ -56,7 +36,7 @@ public class ContasTest extends BaseTest{
 	public void deveAlterarContaComSucesso() {
 		Map<String, String> contaAlterada = new HashMap<String, String>();
 		contaAlterada.put("nome", "Conta para alterar");
-		Integer CONTA_ID =  getIdContaPeloNome("Conta para alterar");
+		Integer CONTA_ID =  BarrigaUtils.getIdContaPeloNome("Conta para alterar");
 		
 		given()
 			.body(contaAlterada)
@@ -85,7 +65,5 @@ public class ContasTest extends BaseTest{
 		;
 	}
 	
-	public Integer getIdContaPeloNome(String nomeConta) {
-		return RestAssured.get("/contas?nome="+nomeConta).then().extract().path("id[0]");
-	}
+	
 }

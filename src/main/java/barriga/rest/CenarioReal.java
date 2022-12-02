@@ -6,41 +6,20 @@ import static org.hamcrest.Matchers.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.sun.tools.xjc.reader.Util;
 
 import core.BaseTest;
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.specification.FilterableRequestSpecification;
-import utils.Utils;
+import utils.DataUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CenarioReal extends BaseTest{
 	public static String conta_nome;
 	public static Integer id_conta;
 	public static Integer id_transacao;
-	@BeforeClass
-	public static void login() {
-		Map<String, String> login = new HashMap<String, String>();
-		login.put("email", "maricris1497@uorak.com");
-		login.put("senha", "1234");
-		
-		String TOKEN = given()
-			.body(login)
-		.when()
-			.post("/signin")
-		.then()
-			.statusCode(200)
-			.extract().path("token")
-		;
-		
-		RestAssured.requestSpecification.header("Authorization", "JWT "+TOKEN);
-	}
 	
 	
 	@Test
@@ -157,7 +136,7 @@ public class CenarioReal extends BaseTest{
 	@Test
 	public void t07_naoDeveCadastrarTransacaoFutura() {
 		Movimentacao movimentacao = getMovimentacaoValida();
-		String dataFutura = Utils.getDataFuturaFormatada(2);
+		String dataFutura = DataUtils.getDataFuturaFormatada(2);
 		movimentacao.setData_transacao(dataFutura);
 		given()
 			.body(movimentacao)
@@ -220,8 +199,8 @@ public class CenarioReal extends BaseTest{
 	private Movimentacao getMovimentacaoValida() {
 		Movimentacao movimentacao = new Movimentacao();
 		movimentacao.setConta_id(id_conta);
-		movimentacao.setData_pagamento(Utils.getDataFuturaFormatada(5));
-		movimentacao.setData_transacao(Utils.getDataFuturaFormatada(-1));
+		movimentacao.setData_pagamento(DataUtils.getDataFuturaFormatada(5));
+		movimentacao.setData_transacao(DataUtils.getDataFuturaFormatada(-1));
 		movimentacao.setDescricao("Teste");
 		movimentacao.setEnvolvido("eu");
 		movimentacao.setValor(12.00f);

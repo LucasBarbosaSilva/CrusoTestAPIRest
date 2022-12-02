@@ -6,37 +6,15 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import barriga.rest.Movimentacao;
 import core.BaseTest;
-import io.restassured.RestAssured;
-import utils.Utils;
+import utils.BarrigaUtils;
+import utils.DataUtils;
 
 public class MovimentacoesTest extends BaseTest {
-	@BeforeClass
-	public static void login() {
-		Map<String, String> login = new HashMap<String, String>();
-		login.put("email", "maricris1497@uorak.com");
-		login.put("senha", "1234");
-		
-		String TOKEN = given()
-			.body(login)
-		.when()
-			.post("/signin")
-		.then()
-			.statusCode(200)
-			.extract().path("token")
-		;
-		
-		RestAssured.requestSpecification.header("Authorization", "JWT "+TOKEN);
-		
-		RestAssured.get("/reset").then().statusCode(200);
-	}
+	
 	
 	@Test
 	public void deveInlcuirMoviemntacaoComSucesso() {
@@ -76,7 +54,7 @@ public class MovimentacoesTest extends BaseTest {
 	@Test
 	public void naoDeveCadastrarTransacaoFutura() {
 		Movimentacao movimentacao = getMovimentacaoValida();
-		String dataFutura = Utils.getDataFuturaFormatada(2);
+		String dataFutura = DataUtils.getDataFuturaFormatada(2);
 		movimentacao.setData_transacao(dataFutura);
 		given()
 			.body(movimentacao)
@@ -92,7 +70,7 @@ public class MovimentacoesTest extends BaseTest {
 	@Test
 	public void t08_naoDeveRemoverContaComMovimentacao() {
 		given()
-			.pathParam("id", getIdContaPeloNome("Conta com movimentacao"))
+			.pathParam("id", BarrigaUtils.getIdContaPeloNome("Conta com movimentacao"))
 		.when()
 			.delete("/contas/{id}")
 		.then()
@@ -105,7 +83,7 @@ public class MovimentacoesTest extends BaseTest {
 	@Test
 	public void deveRemoverMovimentacao() {
 		given()
-			.pathParam("id", getIdTransacaoPeloNome("Movimentacao para exclusao"))
+			.pathParam("id", BarrigaUtils.getIdTransacaoPeloNome("Movimentacao para exclusao"))
 		.when()
 			.delete("/transacoes/{id}") 
 		.then()
@@ -115,9 +93,9 @@ public class MovimentacoesTest extends BaseTest {
 	
 	private Movimentacao getMovimentacaoValida() {
 		Movimentacao movimentacao = new Movimentacao();
-		movimentacao.setConta_id(getIdContaPeloNome("Conta para movimentacoes"));
-		movimentacao.setData_pagamento(Utils.getDataFuturaFormatada(5));
-		movimentacao.setData_transacao(Utils.getDataFuturaFormatada(-1));
+		movimentacao.setConta_id(BarrigaUtils.getIdContaPeloNome("Conta para movimentacoes"));
+		movimentacao.setData_pagamento(DataUtils.getDataFuturaFormatada(5));
+		movimentacao.setData_transacao(DataUtils.getDataFuturaFormatada(-1));
 		movimentacao.setDescricao("Teste");
 		movimentacao.setEnvolvido("eu");
 		movimentacao.setValor(12.00f);
@@ -126,11 +104,5 @@ public class MovimentacoesTest extends BaseTest {
 		return movimentacao;
 	}
 	
-	public Integer getIdContaPeloNome(String nomeConta) {
-		return RestAssured.get("/contas?nome="+nomeConta).then().extract().path("id[0]");
-	}
 	
-	public Integer getIdTransacaoPeloNome(String nomeTransacao) {
-		return RestAssured.get("/transacoes?descricao="+nomeTransacao).then().extract().path("id[0]");
-	}
 }
